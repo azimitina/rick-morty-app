@@ -28,7 +28,12 @@ export interface PaginationProps {
 
 export interface FilterControlsProps {
   searchTerm: string;
+  status: string;
+  species: string;
   sortDirection: 'asc' | 'desc';
-  onSortToggle: () => void;
   onSearchChange: (value: string) => void;
+  onStatusChange: (value: string) => void;
+  onSpeciesChange: (value: string) => void;
+  onSortToggle: () => void;
+  onClearAll: () => void;
 }

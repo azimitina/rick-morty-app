@@ -18,13 +18,17 @@ export const CharacterList = () => {
 
   const currentPage = parseInt(searchParams.get('page') || '1', 10) || 1;
   const searchTerm = searchParams.get('name') || '';
+  const status = searchParams.get('status') || '';
+  const species = searchParams.get('species') || '';
 
   const updateUrl = useCallback(
-    (page: number, search?: string) => {
+    (page: number, name: string, statusVal: string, speciesVal: string) => {
       const newParams = new URLSearchParams();
 
       if (page > 1) newParams.set('page', String(page));
-      if (search) newParams.set('name', search);
+      if (name) newParams.set('name', name);
+      if (statusVal) newParams.set('status', statusVal);
+      if (speciesVal) newParams.set('species', speciesVal);
 
       setSearchParams(newParams);
     },
@@ -33,17 +37,35 @@ export const CharacterList = () => {
 
   const handlePageChange = useCallback(
     (page: number) => {
-      updateUrl(page);
+      updateUrl(page, searchTerm, status, species);
     },
-    [updateUrl]
+    [searchTerm, status, species, updateUrl]
   );
 
   const handleSearchChange = useCallback(
     (newSearch: string) => {
-      updateUrl(1, newSearch);
+      updateUrl(1, newSearch, status, species);
     },
-    [updateUrl]
+    [status, species, updateUrl]
   );
+
+  const handleStatusChange = useCallback(
+    (newStatus: string) => {
+      updateUrl(1, searchTerm, newStatus, species);
+    },
+    [searchTerm, species, updateUrl]
+  );
+
+  const handleSpeciesChange = useCallback(
+    (newSpecies: string) => {
+      updateUrl(1, searchTerm, status, newSpecies);
+    },
+    [searchTerm, status, updateUrl]
+  );
+
+  const handleClearAll = useCallback(() => {
+    updateUrl(1, '', '', '');
+  }, [updateUrl]);
 
   useEffect(() => {
     const fetchCharacters = async () => {
@@ -54,6 +76,8 @@ export const CharacterList = () => {
         const apiUrl = buildQueryString({
           page: currentPage,
           name: searchTerm || undefined,
+          status: (status as 'alive' | 'dead' | 'unknown' | undefined) || undefined,
+          species: species || undefined,
         });
         const response = await fetch(apiUrl);
 
@@ -79,7 +103,7 @@ export const CharacterList = () => {
     };
 
     fetchCharacters();
-  }, [currentPage, searchTerm]);
+  }, [currentPage, searchTerm, status, species]);
 
   const sortedCharacters = useMemo(() => {
     return [...characters].sort((a, b) => {
@@ -89,18 +113,25 @@ export const CharacterList = () => {
   }, [characters, sortDirection]);
 
   return (
-    <section className="bg-zinc-800 px-4 py-8">
+    <section className="px-4 py-8">
       <div className="container max-w-7xl mx-auto">
         <h2 className="text-l font-bold text-gray-500 mb-6">
           Characters
           {pageInfo ? ` (${pageInfo.count} total • Page ${currentPage} of ${pageInfo.pages})` : ''}
         </h2>
+
         <FilterControls
           searchTerm={searchTerm}
-          onSearchChange={handleSearchChange}
+          status={status}
+          species={species}
           sortDirection={sortDirection}
+          onSearchChange={handleSearchChange}
+          onStatusChange={handleStatusChange}
+          onSpeciesChange={handleSpeciesChange}
           onSortToggle={() => setSortDirection((d) => (d === 'asc' ? 'desc' : 'asc'))}
+          onClearAll={handleClearAll}
         />
+
         {loading ? (
           <Loading />
         ) : error ? (
