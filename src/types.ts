@@ -25,3 +25,8 @@ export interface PaginationProps {
   pageInfo: PaginationInfo | null;
   onPageChange: (page: number) => void;
 }
+
+export interface FilterControlsProps {
+  searchTerm: string;
+  onSearchChange: (value: string) => void;
+}

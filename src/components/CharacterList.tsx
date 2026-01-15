@@ -6,6 +6,7 @@ import { CharacterCard } from './CharacterCard';
 import type { Character, PaginationInfo } from '../types';
 import { buildQueryString } from '../api/config';
 import { Pagination } from '../components/Pagination';
+import { FilterControls } from '../components/FilterControls';
 
 export const CharacterList = () => {
   const [characters, setCharacters] = useState<Character[]>([]);
@@ -15,12 +16,14 @@ export const CharacterList = () => {
   const [pageInfo, setPageInfo] = useState<PaginationInfo | null>(null);
 
   const currentPage = parseInt(searchParams.get('page') || '1', 10) || 1;
+  const searchTerm = searchParams.get('name') || '';
 
   const updateUrl = useCallback(
-    (page: number) => {
+    (page: number, search?: string) => {
       const newParams = new URLSearchParams();
 
       if (page > 1) newParams.set('page', String(page));
+      if (search) newParams.set('name', search);
 
       setSearchParams(newParams);
     },
@@ -34,6 +37,13 @@ export const CharacterList = () => {
     [updateUrl]
   );
 
+  const handleSearchChange = useCallback(
+    (newSearch: string) => {
+      updateUrl(1, newSearch);
+    },
+    [updateUrl]
+  );
+
   useEffect(() => {
     const fetchCharacters = async () => {
       try {
@@ -42,6 +52,7 @@ export const CharacterList = () => {
 
         const apiUrl = buildQueryString({
           page: currentPage,
+          name: searchTerm || undefined,
         });
         const response = await fetch(apiUrl);
 
@@ -67,11 +78,16 @@ export const CharacterList = () => {
     };
 
     fetchCharacters();
-  }, [currentPage]);
+  }, [currentPage, searchTerm]);
 
   return (
     <section className="bg-zinc-800 px-4 py-8">
       <div className="container max-w-7xl mx-auto">
+        <h2 className="text-l font-bold text-gray-500 mb-6">
+          Characters
+          {pageInfo ? ` (${pageInfo.count} total • Page ${currentPage} of ${pageInfo.pages})` : ''}
+        </h2>
+        <FilterControls searchTerm={searchTerm} onSearchChange={handleSearchChange} />
         {loading ? (
           <Loading />
         ) : error ? (
@@ -79,9 +95,15 @@ export const CharacterList = () => {
         ) : (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-lg">
-              {characters.map((character) => (
-                <CharacterCard key={character.id} character={character} />
-              ))}
+              {characters.length === 0 ? (
+                <p className="text-zinc-400 col-span-2 text-center py-8">
+                  No characters found matching your search.
+                </p>
+              ) : (
+                characters.map((character) => (
+                  <CharacterCard key={character.id} character={character} />
+                ))
+              )}
             </div>
             <Pagination
               currentPage={currentPage}
