@@ -8,3 +8,7 @@ export interface Character {
   origin: { name: string };
   location: { name: string };
 }
+
+export interface CharacterCardProps {
+  character: Character;
+}

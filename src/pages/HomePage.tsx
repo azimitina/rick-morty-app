@@ -1,3 +1,5 @@
+import { CharacterList } from '../components/CharacterList';
+
 export const HomePage = () => {
-  return <div>HomePage</div>;
+  return <CharacterList />;
 };
