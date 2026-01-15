@@ -28,5 +28,7 @@ export interface PaginationProps {
 
 export interface FilterControlsProps {
   searchTerm: string;
+  sortDirection: 'asc' | 'desc';
+  onSortToggle: () => void;
   onSearchChange: (value: string) => void;
 }

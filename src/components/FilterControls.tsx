@@ -1,7 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
 import type { FilterControlsProps } from '../types';
 
-export const FilterControls = ({ searchTerm, onSearchChange }: FilterControlsProps) => {
+export const FilterControls = ({
+  searchTerm,
+  sortDirection,
+  onSearchChange,
+  onSortToggle,
+}: FilterControlsProps) => {
   const [inputValue, setInputValue] = useState(searchTerm);
   const inputRef = useRef<HTMLInputElement>(null);
   const isUserTypingRef = useRef(false);
@@ -43,6 +48,13 @@ export const FilterControls = ({ searchTerm, onSearchChange }: FilterControlsPro
             className="w-full bg-zinc-700 text-white border border-zinc-600 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent placeholder-zinc-400"
           />
         </div>
+        <button
+          onClick={onSortToggle}
+          className="flex items-center gap-2 bg-zinc-700 text-white border border-zinc-600 rounded-lg px-4 py-2 hover:bg-zinc-600 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500"
+        >
+          <span>Name</span>
+          <span className="text-green-400">{sortDirection === 'asc' ? '↑ A-Z' : '↓ Z-A'}</span>
+        </button>
       </div>
     </div>
   );

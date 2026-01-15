@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Loading } from './Loading';
 import { ErrorDisplay } from './ErrorDisplay';
@@ -14,6 +14,7 @@ export const CharacterList = () => {
   const [error, setError] = useState<string | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const [pageInfo, setPageInfo] = useState<PaginationInfo | null>(null);
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
   const currentPage = parseInt(searchParams.get('page') || '1', 10) || 1;
   const searchTerm = searchParams.get('name') || '';
@@ -80,6 +81,13 @@ export const CharacterList = () => {
     fetchCharacters();
   }, [currentPage, searchTerm]);
 
+  const sortedCharacters = useMemo(() => {
+    return [...characters].sort((a, b) => {
+      const cmp = a.name.localeCompare(b.name);
+      return sortDirection === 'asc' ? cmp : -cmp;
+    });
+  }, [characters, sortDirection]);
+
   return (
     <section className="bg-zinc-800 px-4 py-8">
       <div className="container max-w-7xl mx-auto">
@@ -87,7 +95,12 @@ export const CharacterList = () => {
           Characters
           {pageInfo ? ` (${pageInfo.count} total • Page ${currentPage} of ${pageInfo.pages})` : ''}
         </h2>
-        <FilterControls searchTerm={searchTerm} onSearchChange={handleSearchChange} />
+        <FilterControls
+          searchTerm={searchTerm}
+          onSearchChange={handleSearchChange}
+          sortDirection={sortDirection}
+          onSortToggle={() => setSortDirection((d) => (d === 'asc' ? 'desc' : 'asc'))}
+        />
         {loading ? (
           <Loading />
         ) : error ? (
@@ -95,12 +108,12 @@ export const CharacterList = () => {
         ) : (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-lg">
-              {characters.length === 0 ? (
+              {sortedCharacters.length === 0 ? (
                 <p className="text-zinc-400 col-span-2 text-center py-8">
                   No characters found matching your search.
                 </p>
               ) : (
-                characters.map((character) => (
+                sortedCharacters.map((character) => (
                   <CharacterCard key={character.id} character={character} />
                 ))
               )}
